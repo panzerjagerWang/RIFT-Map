@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RIFT-Map reproduction material</title>
+<meta name="description" content="Reproduction material for the RIFT-Map manuscript under review: the measurements behind Tables 3 to 6 and a script that recomputes the tables.">
+<meta name="robots" content="noindex">
+<style>
+  :root{
+    --bg:#ffffff; --panel:#f6f7f8; --ink:#1b2a32; --muted:#5b6b73; --line:#e3e7e9;
+    --teal:#20867f; --gold:#a67125; --blue:#397ba5; --hero:#fbe3ce;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0f1517; --panel:#161d20; --ink:#e7edef; --muted:#9fb0b6; --line:#232c30;
+      --teal:#5bb6ad; --gold:#d6a860; --blue:#6fb0d6; --hero:#2a2016;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0f1517; --panel:#161d20; --ink:#e7edef; --muted:#9fb0b6; --line:#232c30;
+    --teal:#5bb6ad; --gold:#d6a860; --blue:#6fb0d6; --hero:#2a2016;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  .wrap{max-width:980px;margin:0 auto;padding:0 16px}
+  header{padding:54px 16px 30px;text-align:center}
+  h1{font-family:Georgia,"Times New Roman",serif;font-weight:700;line-height:1.22;
+    font-size:clamp(1.5rem,4.2vw,2.35rem);margin:0 auto;max-width:18em;letter-spacing:-.01em}
+  .venue{color:var(--teal);font-weight:600;letter-spacing:.04em;text-transform:uppercase;
+    font-size:.8rem;margin:0 0 14px}
+  .note{color:var(--muted);font-size:.9rem;margin:6px auto;max-width:44em}
+  .links{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:26px 0 4px}
+  .links a{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:9px;
+    background:var(--ink);color:var(--bg);text-decoration:none;font-weight:600;font-size:.92rem;
+    border:1px solid var(--ink);transition:transform .08s ease}
+  .links a.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+  .links a:hover{transform:translateY(-1px)}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:30px 0 0}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;text-align:left}
+  .stat b{display:block;font-family:Georgia,"Times New Roman",serif;font-size:1.55rem;color:var(--teal);line-height:1.2}
+  .stat span{color:var(--muted);font-size:.86rem}
+  main{padding:8px 0 40px}
+  section{margin:42px 0}
+  h2{font-family:Georgia,"Times New Roman",serif;font-size:1.3rem;margin:0 0 .5em;
+    padding-bottom:.3em;border-bottom:1px solid var(--line)}
+  h3{font-size:1.02rem;margin:1.2em 0 .4em}
+  p{margin:.7em 0}
+  .abstract{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px 22px}
+  .abstract p{margin:.4em 0;text-align:justify}
+  figure{margin:18px 0 0;text-align:center}
+  figure img{max-width:100%;height:auto;border:1px solid var(--line);border-radius:10px;background:#fff;padding:8px}
+  figcaption{color:var(--muted);font-size:.88rem;margin-top:10px;text-align:left}
+  .tbl{overflow-x:auto;border:1px solid var(--line);border-radius:12px;margin-top:16px}
+  table{border-collapse:collapse;width:100%;font-size:.92rem;min-width:520px}
+  th,td{padding:9px 12px;text-align:center;border-bottom:1px solid var(--line)}
+  th:first-child,td:first-child{text-align:left}
+  thead th{background:var(--panel);font-weight:600}
+  tbody tr.hero{background:var(--hero)}
+  tbody tr.hero td{font-weight:700;color:var(--ink)}
+  .cap{color:var(--muted);font-size:.86rem;margin-top:8px}
+  pre{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;
+    overflow-x:auto;font-size:.84rem;line-height:1.5}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  footer{border-top:1px solid var(--line);color:var(--muted);font-size:.86rem;padding:26px 16px 50px;text-align:center}
+  .toggle{position:fixed;top:12px;right:12px;background:var(--panel);border:1px solid var(--line);
+    color:var(--ink);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.8rem}
+  .authors{margin:16px auto 4px;font-size:1.02rem;max-width:44em}
+  .authors sup,.note sup{font-size:.7em}
+  video{width:100%;border-radius:10px;border:1px solid var(--line);background:#000}
+  .sub{color:var(--muted);font-size:.86rem}
+  header .note{max-width:60em}
+  td{vertical-align:top}
+  th:nth-child(2),td:nth-child(2){text-align:left}
+  th:nth-child(3),td:nth-child(3){text-align:left}
+  td code{white-space:nowrap}
+  .box{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 20px}
+  .box p{margin:.35em 0}
+  ol{padding-left:1.3em} li{margin:.3em 0}
+</style>
+</head>
+<body>
+<button class="toggle" id="themeToggle" aria-label="Toggle colour theme">&#9681; theme</button>
+<header>
+  <div class="wrap">
+    <p class="venue">Manuscript under review &middot; Advanced Engineering Informatics</p>
+    <h1>RIFT-Map: Metric underwater mapping from monocular images using flexible reference constraints for robotic simulation</h1>
+    <p class="authors">Jiaqi Wang<sup>a,1</sup>, Jiaqing Wang<sup>b,1</sup>, Xinlei Shao<sup>c</sup>, Zheng Zeng<sup>b,*</sup>, Katsunori Mizuno<sup>a,*</sup></p>
+    <p class="note"><sup>a</sup> Department of Environment Systems, Graduate School of Frontier Sciences, The University of Tokyo<br>
+    <sup>b</sup> School of Oceanography, Shanghai Jiao Tong University<br>
+    <sup>c</sup> Department of Socio-Cultural Environmental Studies, Graduate School of Frontier Sciences, The University of Tokyo<br>
+    <sup>1</sup> equal contribution &nbsp; <sup>*</sup> corresponding authors</p>
+    <nav class="links">
+      <a href="https://github.com/panzerjagerWang/RIFT-Map">&#60;/&#62; Reproduction material</a>
+      <a class="ghost" href="#run">How to run</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section>
+    <h2>Purpose of this page</h2>
+    <div class="box">
+      <p>This page accompanies the manuscript during peer review. It provides the material for checking the reported numbers: the measurements behind Tables 3 to 6 and a script that recomputes the tables from them.</p>
+      <p>The manuscript defines the method, the rows of the tables and the experimental protocol. They are not repeated here, and the files label rows and arms by their order in the manuscript.</p>
+    </div>
+  </section>
+
+  <section id="run">
+    <h2>How to run</h2>
+    <p>The script needs Python 3 with NumPy and SciPy and runs in a few seconds. It was tested with Python 3.12, NumPy 1.26.4 and SciPy 1.11.4 and 1.13.1.</p>
+    <pre><code>git clone https://github.com/panzerjagerWang/RIFT-Map.git
+cd RIFT-Map/reproduce
+pip install -r requirements.txt
+python reproduce_tables.py</code></pre>
+    <p>It prints every recomputed entry beside the value printed in the manuscript and ends with a summary. With <code>--quiet</code> it prints the summary alone:</p>
+    <pre><code>table3    4 of 4 entries equal the manuscript
+table4    11 of 11 entries equal the manuscript
+text_5_3  5 of 5 entries equal the manuscript
+table5    7 of 7 entries equal the manuscript
+table6    9 of 9 entries equal the manuscript
+text_5_5  3 of 3 entries equal the manuscript
+ALL VALUES REPRODUCED</code></pre>
+    <p class="cap">The exit status is 0 when every value equals the manuscript and 1 otherwise. The bootstrap uses a fixed seed, so the intervals are reproduced to the printed digit.</p>
+  </section>
+
+  <section>
+    <h2>What is recomputed</h2>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>In the manuscript</th><th>Recomputed quantities</th><th>Input in <code>reproduce/data/</code></th></tr></thead>
+        <tbody>
+        <tr><td><strong>Table 3</strong><br><span class="sub">Registration of the middle-camera frames</span></td><td>registered frames, number of connected models and size of the largest model, from the model sizes of each run</td><td><code>table3_registration.csv</code></td></tr>
+        <tr><td><strong>Table 4</strong><br><span class="sub">Discrepancy of the 31 withheld intervals</span></td><td>MAE, RMSE, 95% bootstrap interval of the RMSE (20,000 resamples), largest discrepancy, one-sided Wilcoxon signed-rank test and the number of intervals with a smaller absolute discrepancy, from the signed discrepancy of every interval under each of the eleven rows</td><td><code>table4_withheld_intervals.csv</code></td></tr>
+        <tr><td><strong>Table 5</strong><br><span class="sub">Agreement of the renderings with six withheld photographs</span></td><td>image coverage and structural similarity per frame and surface, their means and the share of tape points inside the tape mask</td><td><code>table5_rendering_agreement.csv</code></td></tr>
+        <tr><td><strong>Table 6</strong><br><span class="sub">Simulation results over 100 seeds</span></td><td>mean and standard deviation of the scale error, camera error, MAE and RMSE of every tape and arm, from the result of every seed</td><td><code>table6_simulation.csv</code></td></tr>
+        <tr><td><strong>Sections 5.3 and 5.5</strong><br><span class="sub">Numbers quoted in the text</span></td><td>the ranges and counts that the text states for single rows, intervals and seeds (eight entries)</td><td>the files of Tables 4 and 6</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="cap">Rows are numbered as the manuscript prints them: <code>row01</code> is the first row of Table 4, <code>tape1</code> and <code>arm1</code> the first tape and the first arm of Table 6.</p>
+  </section>
+
+  <section>
+    <h2>Not part of this release</h2>
+    <p>The reconstruction software, the survey images and the reconstructed scene are not part of this release. Reviewers who need them for their assessment can request them through the handling editor.</p>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">Material for the peer review of the RIFT-Map manuscript. &copy; 2026 the authors. All rights reserved.</div>
+</footer>
+
+<script>
+  (function(){
+    var t=document.getElementById('themeToggle');
+    try{var s=localStorage.getItem('riftmap-theme'); if(s) document.documentElement.setAttribute('data-theme',s);}catch(e){}
+    t.addEventListener('click',function(){
+      var cur=document.documentElement.getAttribute('data-theme');
+      var dark=cur?cur==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var next=dark?'light':'dark';
+      document.documentElement.setAttribute('data-theme',next);
+      try{localStorage.setItem('riftmap-theme',next);}catch(e){}
+    });
+  })();
+</script>
+</body>
+</html>
